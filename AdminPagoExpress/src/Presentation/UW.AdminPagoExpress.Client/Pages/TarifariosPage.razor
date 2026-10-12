@@ -1,0 +1,245 @@
+@page "/tarifarios"
+@using UW.AdminPagoExpress.Client.Components.Shared
+@using UW.AdminPagoExpress.Shared.Common
+@using UW.AdminPagoExpress.Shared.Interfaces
+@using UW.AdminPagoExpress.Shared.Request
+@using UW.AdminPagoExpress.Shared.Response
+@inject ITarifarioApiClient TarifarioApiClient
+@inject IJSRuntime JS
+@inject ITratamientoApiClient TratamientoApiClient
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Tarifarios</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-tags text-primary me-2"></i> Mantenedor de Tarifarios
+        </h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Tarifario
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <DataTable TItem="TarifarioResponse"
+                       TableId="tablaTarifarios"
+                       Items="tarifarios"
+                       Columns="columnas">
+                <Acciones>
+                    <button class="btn btn-sm btn-warning me-1" title="Editar" @onclick="() => Editar(context)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" title="Eliminar" @onclick="() => ConfirmarEliminar(context)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </Acciones>
+            </DataTable>
+        </div>
+    </div>
+</div>
+
+@if (mostrarFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        @(idEdicion == null ? "Nuevo Tarifario" : "Editar Tarifario")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="Cancelar"></button>
+                </div>
+                <EditForm Model="modelo" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Precio Alumno</label>
+                                <InputNumber @bind-Value="modelo.PrecioAlumno" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Precio Externo</label>
+                                <InputNumber @bind-Value="modelo.PrecioExterno" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Precio Empleado</label>
+                                <InputNumber @bind-Value="modelo.PrecioEmpleado" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Código Spring</label>
+                                <InputText @bind-Value="modelo.CodigoSpring" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Código Oracle</label>
+                                <InputText @bind-Value="modelo.CodigoOracle" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tratamiento *</label>
+                                <TreatmentSelect Items="tratamientos"
+                                                 SelectedId="modelo.IdTratamiento"
+                                                 SelectedIdChanged="@(v => modelo.IdTratamiento = v)"
+                                                 Placeholder="Seleccione tratamiento" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success" disabled="@guardando">
+                                <i class="bi bi-check-circle me-1"></i> @(guardando ? "Guardando..." : "Guardar")
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (itemAEliminar != null)
+{
+    <div class="modal fade show d-block" style="background:rgba(0,0,0,0.5)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea eliminar el tarifario (ID: <strong>@itemAEliminar.Id</strong>)?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => itemAEliminar = null">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">
+                        @(guardando ? "Eliminando..." : "Eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<TarifarioResponse> tarifarios = new();
+    private CrearTarifarioRequest modelo = new();
+    private TarifarioResponse? itemAEliminar;
+    private long? idEdicion;
+    private bool mostrarFormulario = false;
+    private bool guardando = false;
+    private string? mensajeError;
+    private CancellationTokenSource _cts = new();
+
+    private List<DataTableColumn<TarifarioResponse>> columnas = new()
+    {
+        new() { Titulo = "ID", Valor = t => t.Id },
+        new() { Titulo = "Precio Alumno", Valor = t => t.PrecioAlumno },
+        new() { Titulo = "Precio Externo", Valor = t => t.PrecioExterno },
+        new() { Titulo = "Precio Empleado", Valor = t => t.PrecioEmpleado },
+        new() { Titulo = "Código Spring", Valor = t => t.CodigoSpring },
+        new() { Titulo = "Código Oracle", Valor = t => t.CodigoOracle },
+        new() { Titulo = "ID Tratamiento", Valor = t => t.IdTratamiento },
+    };
+
+    private List<TratamientoResponse> tratamientos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTarifarios();
+        await CargarTratamientos();
+    }
+
+    private async Task CargarTratamientos()
+    {
+        var r = await TratamientoApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) tratamientos = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+
+    private async Task CargarTarifarios()
+    {
+        var r = await TarifarioApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) tarifarios = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+
+    private void Nuevo()
+    {
+        idEdicion = null;
+        modelo = new CrearTarifarioRequest();
+        mostrarFormulario = true;
+    }
+
+    private async Task Editar(TarifarioResponse item)
+    {
+        var r = await TarifarioApiClient.ObtenerPorIdAsync(item.Id, _cts.Token);
+        if (!r.EsExitoso) { mensajeError = r.Error; return; }
+
+        idEdicion = item.Id;
+        modelo = new CrearTarifarioRequest(r.Valor!.PrecioAlumno, r.Valor.PrecioExterno, r.Valor.PrecioEmpleado, r.Valor.CodigoSpring, r.Valor.CodigoOracle, r.Valor.IdTratamiento);
+        mostrarFormulario = true;
+    }
+
+    private void ConfirmarEliminar(TarifarioResponse item) => itemAEliminar = item;
+
+    private async Task EliminarConfirmado()
+    {
+        if (itemAEliminar == null) return;
+        guardando = true;
+        var r = await TarifarioApiClient.EliminarAsync(itemAEliminar.Id, _cts.Token);
+        guardando = false;
+
+        if (r.EsExitoso)
+        {
+            itemAEliminar = null;
+            await CargarTarifarios();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private void Cancelar() => mostrarFormulario = false;
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        ApiResult resultado;
+
+        if (idEdicion == null)
+        {
+            var r = await TarifarioApiClient.CrearAsync(modelo, _cts.Token);
+            resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
+        }
+        else
+        {
+            var req = new ActualizarTarifarioRequest(modelo.PrecioAlumno, modelo.PrecioExterno, modelo.PrecioEmpleado, modelo.CodigoSpring, modelo.CodigoOracle, modelo.IdTratamiento);
+            resultado = await TarifarioApiClient.ActualizarAsync(idEdicion.Value, req, _cts.Token);
+        }
+
+        guardando = false;
+
+        if (resultado.EsExitoso)
+        {
+            mostrarFormulario = false;
+            await CargarTarifarios();
+        }
+        else mensajeError = resultado.Error;
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

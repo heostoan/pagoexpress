@@ -1,0 +1,37 @@
+﻿<div style="@(isVisible ? "display: block;" : "display: none;")">
+    <div class="snackbar @BackgroundColor">
+        <span class="material-symbols-rounded notranslate">
+            @Icon
+        </span>
+        <p>@Message</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "✔️";
+    [Parameter] public string BackgroundColor { get; set; } = "#4CAF50";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public int TiempoMostrado { get; set; } = 3000;
+
+    private bool isVisible;
+
+    public void ShowSnackbar(string message, string icon = "✔️", string backgroundColor = "#4CAF50", int tiempoMostrado = 3000)
+    {
+        Message = message;
+        Icon = icon;
+        BackgroundColor = backgroundColor;
+
+        isVisible = true;
+        StateHasChanged();
+
+        _ = HideSnackbarAsync();
+    }
+
+    private async Task HideSnackbarAsync()
+    {
+        await Task.Delay(TiempoMostrado);
+        isVisible = false;
+        StateHasChanged();
+    }
+
+}

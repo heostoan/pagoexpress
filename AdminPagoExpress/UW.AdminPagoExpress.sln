@@ -1,0 +1,83 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E88E2FD6-E3FF-4217-9652-1E5DC656C636}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7E37D077-FC96-46D8-A395-E6225F8302A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infraestructure", "Infraestructure", "{9925B48E-03FF-4336-9BFB-7F9691C4FE12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{DB4FCC4A-05E6-4BA9-B2DE-C7CC57B85288}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{FA20803E-DECB-4CF8-B686-A6DB9D1AF663}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress.Application", "src\Core\UW.AdminPagoExpress.Application\UW.AdminPagoExpress.Application.csproj", "{65F5D125-2629-71EB-98FC-EFAD2B57BAF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress.Domain", "src\Core\UW.AdminPagoExpress.Domain\UW.AdminPagoExpress.Domain.csproj", "{9AD6022A-87DA-A838-C208-5A056B326BC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress.Infraestructure", "src\Infraestructure\UW.AdminPagoExpress.Infraestructure\UW.AdminPagoExpress.Infraestructure.csproj", "{54581F64-97A8-B162-C12C-3D89459DA931}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress.Shared", "src\Shared\UW.AdminPagoExpress.Shared\UW.AdminPagoExpress.Shared.csproj", "{89CC3DA5-FF41-2BB1-2D44-A5669D293F25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress", "src\Presentation\UW.AdminPagoExpress\UW.AdminPagoExpress.csproj", "{4D246A19-74D6-8562-DFAC-479505597C0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UW.AdminPagoExpress.Client", "src\Presentation\UW.AdminPagoExpress.Client\UW.AdminPagoExpress.Client.csproj", "{58A98B58-5674-8193-BEAB-22CD1FBB670D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65F5D125-2629-71EB-98FC-EFAD2B57BAF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65F5D125-2629-71EB-98FC-EFAD2B57BAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65F5D125-2629-71EB-98FC-EFAD2B57BAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65F5D125-2629-71EB-98FC-EFAD2B57BAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AD6022A-87DA-A838-C208-5A056B326BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AD6022A-87DA-A838-C208-5A056B326BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AD6022A-87DA-A838-C208-5A056B326BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AD6022A-87DA-A838-C208-5A056B326BC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54581F64-97A8-B162-C12C-3D89459DA931}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54581F64-97A8-B162-C12C-3D89459DA931}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54581F64-97A8-B162-C12C-3D89459DA931}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54581F64-97A8-B162-C12C-3D89459DA931}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89CC3DA5-FF41-2BB1-2D44-A5669D293F25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89CC3DA5-FF41-2BB1-2D44-A5669D293F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89CC3DA5-FF41-2BB1-2D44-A5669D293F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89CC3DA5-FF41-2BB1-2D44-A5669D293F25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D246A19-74D6-8562-DFAC-479505597C0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D246A19-74D6-8562-DFAC-479505597C0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D246A19-74D6-8562-DFAC-479505597C0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D246A19-74D6-8562-DFAC-479505597C0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58A98B58-5674-8193-BEAB-22CD1FBB670D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58A98B58-5674-8193-BEAB-22CD1FBB670D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58A98B58-5674-8193-BEAB-22CD1FBB670D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58A98B58-5674-8193-BEAB-22CD1FBB670D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {7E37D077-FC96-46D8-A395-E6225F8302A6}
+		{9925B48E-03FF-4336-9BFB-7F9691C4FE12} = {7E37D077-FC96-46D8-A395-E6225F8302A6}
+		{DB4FCC4A-05E6-4BA9-B2DE-C7CC57B85288} = {7E37D077-FC96-46D8-A395-E6225F8302A6}
+		{FA20803E-DECB-4CF8-B686-A6DB9D1AF663} = {7E37D077-FC96-46D8-A395-E6225F8302A6}
+		{65F5D125-2629-71EB-98FC-EFAD2B57BAF4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9AD6022A-87DA-A838-C208-5A056B326BC3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{54581F64-97A8-B162-C12C-3D89459DA931} = {9925B48E-03FF-4336-9BFB-7F9691C4FE12}
+		{89CC3DA5-FF41-2BB1-2D44-A5669D293F25} = {FA20803E-DECB-4CF8-B686-A6DB9D1AF663}
+		{4D246A19-74D6-8562-DFAC-479505597C0D} = {DB4FCC4A-05E6-4BA9-B2DE-C7CC57B85288}
+		{58A98B58-5674-8193-BEAB-22CD1FBB670D} = {DB4FCC4A-05E6-4BA9-B2DE-C7CC57B85288}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ACF4B709-C9BE-4D5C-B8FB-FAABB7D6FBBB}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,22 @@
+dbneoradev_high = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=mrglkkhj.adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))
+
+dbneoradev_medium = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=mrglkkhj.adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))
+
+dbneoradev_low = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=mrglkkhj.adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_low.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))
+
+dbneoradev_tp = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=mrglkkhj.adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_tp.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))
+
+dbneoradev_tpurgent = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=mrglkkhj.adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_tpurgent.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))
+
+dbneoradev_public_high = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+
+dbneoradev_public_medium = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+
+dbneoradev_public_low = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_low.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+
+dbneoradev_public_tp = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_tp.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+
+dbneoradev_public_tpurgent = (description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.us-ashburn-1.oraclecloud.com))(connect_data=(service_name=g5bc7c6e96defe6_dbneoradev_tpurgent.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
+
+
+

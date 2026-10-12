@@ -1,0 +1,68 @@
+﻿@typeparam TItem
+@inject IJSRuntime JS
+
+<div class="table-responsive">
+    <table id="@TableId" class="table table-striped table-hover table-bordered align-middle w-100">
+        <thead class="table-primary">
+            <tr>
+                @foreach (var col in Columns)
+                {
+                    <th>@col.Titulo</th>
+                }
+                @if (Acciones != null)
+                {
+                    <th style="width:120px;" class="text-center">Acciones</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr @key="item">
+                    @foreach (var col in Columns)
+                    {
+                        @if (col.EsHtml)
+                        {
+                            <td>@((MarkupString)col.Valor(item).ToString()!)</td>
+                        }
+                        else
+                        {
+                            <td>@col.Valor(item)</td>
+                        }
+                    }
+                    @if (Acciones != null)
+                    {
+                        <td class="text-center">@Acciones(item)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter] public string TableId { get; set; } = $"tabla_{Guid.NewGuid():N}";
+    [Parameter, EditorRequired] public List<DataTableColumn<TItem>> Columns { get; set; } = new();
+    [Parameter, EditorRequired] public List<TItem> Items { get; set; } = new();
+    [Parameter] public RenderFragment<TItem>? Acciones { get; set; }
+
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Items == null || !Items.Any())
+            return;
+
+        try
+        {
+            await JS.InvokeVoidAsync("AppDataTable.destroy", TableId);
+            await JS.InvokeVoidAsync("AppDataTable.init", TableId);
+        }
+        catch (JSDisconnectedException) { /* circuito cerrado */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("AppDataTable.destroy", TableId); } catch { /* ignore */ }
+    }
+}

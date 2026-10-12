@@ -1,0 +1,273 @@
+@page "/pacientes"
+@using UW.AdminPagoExpress.Client.Components.Shared
+@using UW.AdminPagoExpress.Shared.Common
+@using UW.AdminPagoExpress.Shared.Interfaces
+@using UW.AdminPagoExpress.Shared.Request
+@using UW.AdminPagoExpress.Shared.Response
+@inject IPacienteApiClient PacienteApiClient
+@inject IJSRuntime JS
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Pacientes</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-person-lines-fill text-primary me-2"></i> Mantenedor de Pacientes
+        </h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Paciente
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <DataTable TItem="PacienteResponse"
+                       TableId="tablaPacientes"
+                       Items="pacientes"
+                       Columns="columnas">
+                <Acciones>
+                    <button class="btn btn-sm btn-warning me-1" title="Editar" @onclick="() => Editar(context)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" title="Eliminar" @onclick="() => ConfirmarEliminar(context)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </Acciones>
+            </DataTable>
+        </div>
+    </div>
+</div>
+
+@if (mostrarFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        @(idEdicion == null ? "Nuevo Paciente" : "Editar Paciente")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="Cancelar"></button>
+                </div>
+                <EditForm Model="modelo" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Tipo Documento</label>
+                                <InputText @bind-Value="modelo.TipoDocumento" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Documento</label>
+                                <InputText @bind-Value="modelo.DocIdentidad" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Género</label>
+                                <InputText @bind-Value="modelo.Genero" class="form-control" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Nombres</label>
+                                <InputText @bind-Value="modelo.Nombres" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Apellido Paterno</label>
+                                <InputText @bind-Value="modelo.ApellidoPaterno" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Apellido Materno</label>
+                                <InputText @bind-Value="modelo.ApellidoMaterno" class="form-control" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Celular</label>
+                                <InputText @bind-Value="modelo.Celular" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Correo</label>
+                                <InputText @bind-Value="modelo.Correo" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Fecha Nacimiento</label>
+                                <InputDate @bind-Value="modelo.FechaNacimiento" class="form-control" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success" disabled="@guardando">
+                                <i class="bi bi-check-circle me-1"></i> @(guardando ? "Guardando..." : "Guardar")
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (itemAEliminar != null)
+{
+    <div class="modal fade show d-block" style="background:rgba(0,0,0,0.5)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea eliminar el paciente <strong>@itemAEliminar.Nombres @itemAEliminar.ApellidoPaterno @itemAEliminar.ApellidoMaterno</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => itemAEliminar = null">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">
+                        @(guardando ? "Eliminando..." : "Eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<PacienteResponse> pacientes = new();
+    private CrearPacienteRequest modelo = new();
+    private PacienteResponse? itemAEliminar;
+    private long? idEdicion;
+    private bool mostrarFormulario = false;
+    private bool guardando = false;
+    private string? mensajeError;
+    private CancellationTokenSource _cts = new();
+
+    private List<DataTableColumn<PacienteResponse>> columnas = new()
+    {
+        new() { Titulo = "ID", Valor = p => p.Id },
+        new() { Titulo = "Nombres", Valor = p => p.Nombres },
+        new() { Titulo = "Apellidos", Valor = p => p.ApellidoPaterno + " " + p.ApellidoMaterno },
+        new() { Titulo = "Documento", Valor = p => p.DocIdentidad },
+        new() { Titulo = "Fecha Nac.", Valor = p => p.FechaNacimiento?.ToString("yyyy-MM-dd") ?? "" },
+        new() { Titulo = "Estado", Valor = p => p.Estado }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPacientes();
+    }
+
+    private async Task CargarPacientes()
+    {
+        var r = await PacienteApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) pacientes = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+
+    private void Nuevo()
+    {
+        idEdicion = null;
+        modelo = new CrearPacienteRequest();
+        mostrarFormulario = true;
+    }
+
+    private async Task Editar(PacienteResponse item)
+    {
+        var r = await PacienteApiClient.ObtenerPorIdAsync(item.Id, _cts.Token);
+        if (!r.EsExitoso) { mensajeError = r.Error; return; }
+
+        idEdicion = item.Id;
+        var v = r.Valor!;
+        modelo = new CrearPacienteRequest
+        {
+            TipoDocumento = v.TipoDocumento,
+            DocIdentidad = v.DocIdentidad,
+            Nombres = v.Nombres,
+            ApellidoPaterno = v.ApellidoPaterno,
+            ApellidoMaterno = v.ApellidoMaterno,
+            Genero = v.Genero,
+            Celular = v.Celular,
+            Correo = v.Correo,
+            FechaNacimiento = v.FechaNacimiento,
+            IdAlumno = v.IdAlumno,
+            IdFirma = v.IdFirma
+        };
+        mostrarFormulario = true;
+    }
+
+    private void ConfirmarEliminar(PacienteResponse item) => itemAEliminar = item;
+
+    private async Task EliminarConfirmado()
+    {
+        if (itemAEliminar == null) return;
+        guardando = true;
+        var r = await PacienteApiClient.EliminarAsync(itemAEliminar.Id, _cts.Token);
+        guardando = false;
+
+        if (r.EsExitoso)
+        {
+            itemAEliminar = null;
+            await CargarPacientes();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        ApiResult resultado;
+
+        if (idEdicion == null)
+        {
+            var r = await PacienteApiClient.CrearAsync(modelo, _cts.Token);
+            resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
+        }
+        else
+        {
+            var req = new ActualizarPacienteRequest
+            {
+                TipoDocumento = modelo.TipoDocumento,
+                DocIdentidad = modelo.DocIdentidad,
+                Nombres = modelo.Nombres,
+                ApellidoPaterno = modelo.ApellidoPaterno,
+                ApellidoMaterno = modelo.ApellidoMaterno,
+                Genero = modelo.Genero,
+                Celular = modelo.Celular,
+                Correo = modelo.Correo,
+                FechaNacimiento = modelo.FechaNacimiento,
+                Estado = "1",
+                IdAlumno = modelo.IdAlumno,
+                IdFirma = modelo.IdFirma
+            };
+            resultado = await PacienteApiClient.ActualizarAsync(idEdicion.Value, req, _cts.Token);
+        }
+
+        guardando = false;
+
+        if (resultado.EsExitoso)
+        {
+            mostrarFormulario = false;
+            await CargarPacientes();
+        }
+        else mensajeError = resultado.Error;
+    }
+
+    private void Cancelar() => mostrarFormulario = false;
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

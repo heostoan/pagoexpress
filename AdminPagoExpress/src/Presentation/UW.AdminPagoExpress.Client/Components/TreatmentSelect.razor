@@ -1,0 +1,44 @@
+@using UW.AdminPagoExpress.Shared.Response
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<div>
+    <select class="form-select chosen-select" @ref="_selectRef" @onchange="OnChange">
+        <option value="">@Placeholder</option>
+        @foreach (var t in Items)
+        {
+            <option value="@t.Id" selected="@(t.Id == SelectedId)">@t.Nombre</option>
+        }
+    </select>
+</div>
+
+@code {
+    private ElementReference _selectRef;
+
+    [Parameter] public List<TratamientoResponse> Items { get; set; } = new();
+    [Parameter] public long SelectedId { get; set; }
+    [Parameter] public EventCallback<long> SelectedIdChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Seleccione...";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("chosenInit", _selectRef);
+        }
+    }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        if (long.TryParse(e?.Value?.ToString(), out var id))
+        {
+            SelectedId = id;
+            await SelectedIdChanged.InvokeAsync(id);
+        }
+        else
+        {
+            SelectedId = 0;
+            await SelectedIdChanged.InvokeAsync(0);
+        }
+    }
+}

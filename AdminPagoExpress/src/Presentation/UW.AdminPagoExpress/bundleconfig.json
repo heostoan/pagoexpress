@@ -1,0 +1,50 @@
+[
+  {
+    "outputFileName": "wwwroot/js/autoComplete.min.js",
+    "inputFiles": [
+      "wwwroot/js/autoComplete.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/dropdown.min.js",
+    "inputFiles": [
+      "wwwroot/js/dropdown.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/scripts.min.js",
+    "inputFiles": [
+      "wwwroot/js/scripts.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/scrollHelper.min.js",
+    "inputFiles": [
+      "wwwroot/js/scrollHelper.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/tooltip.min.js",
+    "inputFiles": [
+      "wwwroot/js/tooltip.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/styleguide.min.css",
+    "inputFiles": [
+      "wwwroot/css/styleguide.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/master.min.css",
+    "inputFiles": [
+      "wwwroot/css/master.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/componentes.min.css",
+    "inputFiles": [
+      "wwwroot/css/componentes.css"
+    ]
+  }
+]

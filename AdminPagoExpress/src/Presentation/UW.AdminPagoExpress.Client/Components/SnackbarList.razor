@@ -1,0 +1,60 @@
+﻿@typeparam T
+
+<div style="@(isVisible ? "display: block;" : "display: none;")">
+    <div class="snackbar @BackgroundColor">
+        <span class="material-symbols-rounded notranslate">
+            @Icon
+        </span>
+        @if (Items != null && Items.Any())
+        {
+            <ul>
+                @foreach (var item in Items)
+                {
+                    @if (ItemTemplate != null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        <li>@item.ToString()</li>
+                    }
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public string Icon { get; set; } = "✔️";
+    [Parameter] public string BackgroundColor { get; set; } = "#4CAF50";
+    [Parameter] public List<T> Items { get; set; } = new();
+    [Parameter] public int TiempoMostrado { get; set; } = 3000;
+    [Parameter] public RenderFragment<T> ItemTemplate { get; set; }
+
+    private bool isVisible;
+
+    /// <summary>
+    ///     Muestra el snackbar con la lista de elementos.
+    /// </summary>
+    public void ShowSnackbar(List<T> items, string icon = "✔️", string backgroundColor = "#4CAF50", int tiempoMostrado = 3000)
+    {
+        Items = items;
+        Icon = icon;
+        BackgroundColor = backgroundColor;
+        TiempoMostrado = tiempoMostrado;
+
+        isVisible = true;
+        StateHasChanged();
+
+        _ = HideSnackbarAsync();
+    }
+
+    private async Task HideSnackbarAsync()
+    {
+        await Task.Delay(TiempoMostrado);
+        isVisible = false;
+        StateHasChanged();
+    }
+
+}

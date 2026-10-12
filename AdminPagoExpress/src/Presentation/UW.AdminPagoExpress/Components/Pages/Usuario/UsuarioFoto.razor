@@ -1,0 +1,24 @@
+﻿@inject IJSRuntime JSRuntime  
+
+@if (UserPhoto != null)
+{
+    <img src="@($"data:image/png;base64,{UserPhoto}")" alt="User Photo" style="width: 100%; height: 100%;"/>
+}
+else
+{
+    <img src="./Images/img_profile.jpg" alt="Default Profile Picture" style="width: 100%; height: 100%;"/>
+}
+
+@code {
+    private string UserPhoto { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            UserPhoto = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "photoUsuario");
+            StateHasChanged();
+        }
+    }
+
+}

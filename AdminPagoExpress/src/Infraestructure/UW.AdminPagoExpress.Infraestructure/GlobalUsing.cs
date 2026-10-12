@@ -1,0 +1,9 @@
+﻿global using Dapper;
+global using Dapper.Oracle;
+global using Microsoft.Extensions.DependencyInjection;
+global using Newtonsoft.Json;
+global using Oracle.ManagedDataAccess.Client;
+global using Serilog;
+global using System.Data;
+global using System.Text;
+global using UW.AdminPagoExpress.Domain.Entities;

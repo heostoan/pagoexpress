@@ -1,0 +1,17 @@
+﻿@rendermode @(new InteractiveServerRenderMode(false))
+
+
+<button @onclick="LoginWithMicrosoft">Iniciar sesión con Microsoft</button>
+
+@code {
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    [Parameter] public string idSesion { get; set; } = default!;
+
+    private void LoginWithMicrosoft()
+    {
+        var url = $"/authMicrosoft/login?idSesion={idSesion}";
+        NavigationManager.NavigateTo(url);
+    }
+
+}

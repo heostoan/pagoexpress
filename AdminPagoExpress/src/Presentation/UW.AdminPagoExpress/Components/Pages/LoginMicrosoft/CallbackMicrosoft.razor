@@ -1,0 +1,60 @@
+﻿@page "/callback-microsoft"
+@using System.Web
+@inject NavigationManager Navigation
+<h3>Callback de Microsoft</h3>
+
+@if (isLoading)
+{
+    <p>Procesando la respuesta...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">Error: @errorMessage</p>
+}
+else
+{
+    <p>Respuesta procesada correctamente.</p>
+}
+
+@code {
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Aquí puedes obtener los parámetros de la URL
+            var query = new Uri(Navigation.Uri).Query;
+            var parameters = HttpUtility.ParseQueryString(query);
+
+            // Ejemplo: Obtener un parámetro llamado "code"
+            var code = parameters["code"];
+            if (!string.IsNullOrEmpty(code))
+            {
+                // Procesa el código recibido
+                await ProcesarCodigoAsync(code);
+            }
+            else
+            {
+                errorMessage = "No se recibió el parámetro 'code'.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ocurrió un error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ProcesarCodigoAsync(string code)
+    {
+        // Aquí puedes implementar la lógica para procesar el código
+        // Por ejemplo, enviar el código a tu backend para obtener un token
+        await Task.Delay(1000); // Simulación de procesamiento
+    }
+
+}

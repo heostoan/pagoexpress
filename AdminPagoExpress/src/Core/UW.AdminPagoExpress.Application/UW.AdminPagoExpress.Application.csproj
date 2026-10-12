@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Features\LogManual\Queries\**" />
+      <Compile Remove="Features\UrlCryp\Commands\**" />
+      <EmbeddedResource Remove="Features\LogManual\Queries\**" />
+      <EmbeddedResource Remove="Features\UrlCryp\Commands\**" />
+      <None Remove="Features\LogManual\Queries\**" />
+      <None Remove="Features\UrlCryp\Commands\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ErrorOr" Version="2.0.1" />
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+        <PackageReference Include="Mapster" Version="10.0.7" />
+        <PackageReference Include="Mapster.DependencyInjection" Version="10.0.7" />
+        <PackageReference Include="MediatR" Version="12.5.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.9.2" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.80" />
+        <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+        <PackageReference Include="RestSharp" Version="112.1.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+        <PackageReference Include="System.Text.Json" Version="9.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Shared\UW.AdminPagoExpress.Shared\UW.AdminPagoExpress.Shared.csproj" />
+        <ProjectReference Include="..\UW.AdminPagoExpress.Domain\UW.AdminPagoExpress.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Base\Wallet\" />
+      <Folder Include="Features\Login\Commands\RemoveAuthToken\" />
+      <Folder Include="Features\OCI\Commands\" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Base\Wallet\cwallet.sso">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\ewallet.p12">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\keystore.jks">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\ojdbc.properties">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\README">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\sqlnet.ora">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\tnsnames.ora">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Base\Wallet\truststore.jks">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

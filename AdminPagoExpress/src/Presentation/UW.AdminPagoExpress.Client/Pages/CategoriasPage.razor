@@ -1,0 +1,216 @@
+@page "/categorias"
+@using UW.AdminPagoExpress.Client.Components.Shared
+@using UW.AdminPagoExpress.Shared.Common
+@using UW.AdminPagoExpress.Shared.Interfaces
+@using UW.AdminPagoExpress.Shared.Request
+@using UW.AdminPagoExpress.Shared.Response
+@inject ICategoriaApiClient CategoriaApiClient
+@inject IJSRuntime JS
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Categorías</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-folder2-open text-primary me-2"></i> Mantenedor de Categorías
+        </h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Categoría
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <DataTable TItem="CategoriaResponse"
+                       TableId="tablaCategorias"
+                       Items="categorias"
+                       Columns="columnas">
+                <Acciones>
+                    <button class="btn btn-sm btn-warning me-1" title="Editar" @onclick="() => Editar(context)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" title="Eliminar" @onclick="() => ConfirmarEliminar(context)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </Acciones>
+            </DataTable>
+        </div>
+    </div>
+</div>
+
+@if (mostrarFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        @(idEdicion == null ? "Nueva Categoría" : "Editar Categoría")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="Cancelar"></button>
+                </div>
+                <EditForm Model="modelo" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nombre *</label>
+                                <InputText @bind-Value="modelo.Nombre" class="form-control" placeholder="Ingrese el nombre" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Estado</label>
+                                <InputSelect @bind-Value="modelo.Estado" class="form-select">
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Descripción</label>
+                                <InputTextArea @bind-Value="modelo.Descripcion" class="form-control" Rows="3" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success" disabled="@guardando">
+                                <i class="bi bi-check-circle me-1"></i> @(guardando ? "Guardando..." : "Guardar")
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (itemAEliminar != null)
+{
+    <div class="modal fade show d-block" style="background:rgba(0,0,0,0.5)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea eliminar la categoría <strong>@itemAEliminar.Nombre</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => itemAEliminar = null">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">
+                        @(guardando ? "Eliminando..." : "Eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CategoriaResponse> categorias = new();
+    private CrearCategoriaRequest modelo = new();
+    private CategoriaResponse? itemAEliminar;
+    private long? idEdicion;
+    private bool mostrarFormulario = false;
+    private bool guardando = false;
+    private string? mensajeError;
+    private CancellationTokenSource _cts = new();
+
+    private List<DataTableColumn<CategoriaResponse>> columnas = new()
+    {
+        new() { Titulo = "ID", Valor = c => c.Id },
+        new() { Titulo = "Nombre", Valor = c => c.Nombre },
+        new() { Titulo = "Estado", Valor = c => c.Estado },
+        new() { Titulo = "Descripción", Valor = c => c.Descripcion }
+    };
+
+    protected override async Task OnInitializedAsync() => await CargarCategorias();
+
+    private async Task CargarCategorias()
+    {
+        var r = await CategoriaApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) categorias = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+
+    private void Nuevo()
+    {
+        idEdicion = null;
+        modelo = new CrearCategoriaRequest();
+        mostrarFormulario = true;
+    }
+
+    private async Task Editar(CategoriaResponse item)
+    {
+        var r = await CategoriaApiClient.ObtenerPorIdAsync(item.Id, _cts.Token);
+        if (!r.EsExitoso) { mensajeError = r.Error; return; }
+
+        idEdicion = item.Id;
+        modelo = new CrearCategoriaRequest(r.Valor!.Nombre, r.Valor.Estado, r.Valor.Descripcion);
+        mostrarFormulario = true;
+    }
+
+    private void ConfirmarEliminar(CategoriaResponse item) => itemAEliminar = item;
+
+    private async Task EliminarConfirmado()
+    {
+        if (itemAEliminar == null) return;
+        guardando = true;
+        var r = await CategoriaApiClient.EliminarAsync(itemAEliminar.Id, _cts.Token);
+        guardando = false;
+
+        if (r.EsExitoso)
+        {
+            itemAEliminar = null;
+            await CargarCategorias();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private void Cancelar() => mostrarFormulario = false;
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        ApiResult resultado;
+
+        if (idEdicion == null)
+        {
+            var r = await CategoriaApiClient.CrearAsync(modelo, _cts.Token);
+            resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
+        }
+        else
+        {
+            var req = new ActualizarCategoriaRequest(modelo.Nombre, modelo.Estado, modelo.Descripcion);
+            resultado = await CategoriaApiClient.ActualizarAsync(idEdicion.Value, req, _cts.Token);
+        }
+
+        guardando = false;
+
+        if (resultado.EsExitoso)
+        {
+            mostrarFormulario = false;
+            await CargarCategorias();
+        }
+        else mensajeError = resultado.Error;
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

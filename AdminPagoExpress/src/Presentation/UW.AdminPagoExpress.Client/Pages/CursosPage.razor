@@ -1,0 +1,384 @@
+@page "/cursos"
+@using UW.AdminPagoExpress.Client.Components.Shared
+@using UW.AdminPagoExpress.Shared.Common
+@using UW.AdminPagoExpress.Shared.Interfaces
+@using UW.AdminPagoExpress.Shared.Request
+@using UW.AdminPagoExpress.Shared.Response
+@inject ICursoApiClient CursoApiClient
+@inject IDetalleTratamientoCursoApiClient DetalleApiClient
+@inject IJSRuntime JS
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Cursos</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-journal-text text-primary me-2"></i> Mantenedor de Cursos
+        </h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Curso
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <DataTable TItem="CursoResponse"
+                       TableId="tablaCursos"
+                       Items="cursos"
+                       Columns="columnas">
+                <Acciones>
+                    <button class="btn btn-sm btn-warning me-1" title="Editar" @onclick="() => Editar(context)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info me-1" title="Tratamientos" @onclick="() => AbrirModalTratamientos(context)">
+                        <i class="bi bi-list-columns-reverse"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" title="Eliminar" @onclick="() => ConfirmarEliminar(context)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </Acciones>
+            </DataTable>
+        </div>
+    </div>
+</div>
+
+@* Modal para seleccionar y editar tratamientos asignados a un curso *@
+@if (mostrarModalTratamientos)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1060;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Asignar Tratamientos a curso: @cursoSeleccionado?.Nombre</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalTratamientos"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input class="form-control" placeholder="Buscar..." @bind="filtro" />
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="tablaTratamientosModal" class="table table-striped table-hover table-bordered align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:40px;"><input type="checkbox" @onclick="ToggleSeleccionTodos" /></th>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Estado Rel.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in tratamientosFiltrados)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" checked="@seleccionados.Contains(t.Id)" @onchange="(e) => ToggleSeleccion(t.Id, e.Value)" /></td>
+                                        <td>@t.Id</td>
+                                        <td>@t.Nombre</td>
+                                        <td>@t.IdCategoria</td>
+                                        <td>
+                                            @if (detallesPorTratamiento.TryGetValue(t.Id, out var det))
+                                            {
+                                                <select class="form-select form-select-sm" @onchange="(e) => CambiarEstadoDetalle(det.IdDetalle, int.Parse(e.Value.ToString()))" value="@det.Estado">
+                                                    <option value="1">Activo</option>
+                                                    <option value="0">Inactivo</option>
+                                                </select>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin asignar</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalTratamientos">Cerrar</button>
+                    <button class="btn btn-success" @onclick="GuardarAsignaciones" disabled="@guardando">@(guardando? "Guardando..." : "Guardar asignaciones")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        @(idEdicion == null ? "Nuevo Curso" : "Editar Curso")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="Cancelar"></button>
+                </div>
+                <EditForm Model="modelo" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nombre *</label>
+                                <InputText @bind-Value="modelo.Nombre" class="form-control" placeholder="Ingrese el nombre" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Código Curso *</label>
+                                <InputText @bind-Value="modelo.CodigoCurso" class="form-control" placeholder="Ingrese el código" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Ciclo</label>
+                                <InputSelect @bind-Value="modelo.Ciclo" class="form-select">
+                                    <option value="1">I</option>
+                                    <option value="2">II</option>
+                                    <option value="3">III</option>
+                                    <option value="4">IV</option>
+                                    <option value="5">V</option>
+                                    <option value="6">VI</option>
+                                    <option value="7">VII</option>
+                                    <option value="8">VIII</option>
+                                    <option value="9">IX</option>
+                                    <option value="10">X</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">SIS</label>
+                                <InputSelect @bind-Value="modelo.Sis" class="form-select">
+                                    <option value="S">SIGU</option>
+                                    <option value="C">CAMPUS</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Estado</label>
+                                <InputSelect @bind-Value="modelo.Estado" class="form-select">
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success" disabled="@guardando">
+                                <i class="bi bi-check-circle me-1"></i> @(guardando ? "Guardando..." : "Guardar")
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (itemAEliminar != null)
+{
+    <div class="modal fade show d-block" style="background:rgba(0,0,0,0.5)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea eliminar el curso <strong>@itemAEliminar.Nombre</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => itemAEliminar = null">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">
+                        @(guardando ? "Eliminando..." : "Eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CursoResponse> cursos = new();
+    private CrearCursoRequest modelo = new();
+    private CursoResponse? itemAEliminar;
+    private long? idEdicion;
+    private bool mostrarFormulario = false;
+    private bool guardando = false;
+    private string? mensajeError;
+    private CancellationTokenSource _cts = new();
+
+    private List<DataTableColumn<CursoResponse>> columnas = new()
+    {
+        new() { Titulo = "ID", Valor = c => c.Id },
+        new() { Titulo = "Nombre", Valor = c => c.Nombre },
+        new() { Titulo = "Código", Valor = c => c.CodigoCurso },
+        new() { Titulo = "Ciclo", Valor = c => c.Ciclo },
+        new() { Titulo = "SIS", Valor = c => c.Sis == "S" ? "SIGU" : "CAMPUS" },
+        new() { Titulo = "Estado",
+                Valor = t => t.Estado == "1"
+                    ? "<span class='badge bg-success'>Activo</span>"
+                    : "<span class='badge bg-secondary'>Inactivo</span>",
+                EsHtml = true }
+    };
+
+    // Modal tratamientos
+    private bool mostrarModalTratamientos = false;
+    private CursoResponse? cursoSeleccionado;
+    private List<TratamientoResponse> tratamientos = new();
+    private List<TratamientoResponse> tratamientosFiltrados => string.IsNullOrWhiteSpace(filtro) ? tratamientos : tratamientos.Where(t => t.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
+    private string filtro = string.Empty;
+    private HashSet<long> seleccionados = new();
+    private Dictionary<long, DetalleTratamientoCursoResponse> detallesPorTratamiento = new();
+
+    private async Task AbrirModalTratamientos(CursoResponse curso)
+    {
+        cursoSeleccionado = curso;
+        mostrarModalTratamientos = true;
+        guardando = false;
+        seleccionados.Clear();
+        detallesPorTratamiento.Clear();
+
+        var r = await DetalleApiClient.ListarTratamientosAsync(_cts.Token);
+        if (r.EsExitoso) tratamientos = r.Valor ?? new();
+        else mensajeError = r.Error;
+
+        var d = await DetalleApiClient.ListarPorCursoAsync(curso.Id, _cts.Token);
+        if (d.EsExitoso)
+        {
+            foreach (var det in d.Valor ?? new())
+            {
+                detallesPorTratamiento[det.IdTratamiento] = det;
+                seleccionados.Add(det.IdTratamiento);
+            }
+        }
+    }
+
+    private void CerrarModalTratamientos() => mostrarModalTratamientos = false;
+
+    private void ToggleSeleccion(long idTratamiento, object? value)
+    {
+        var isChecked = value as bool? ?? false;
+        if (isChecked) seleccionados.Add(idTratamiento);
+        else seleccionados.Remove(idTratamiento);
+    }
+
+    private void ToggleSeleccionTodos()
+    {
+        if (tratamientosFiltrados.All(t => seleccionados.Contains(t.Id)))
+            foreach (var t in tratamientosFiltrados) seleccionados.Remove(t.Id);
+        else
+            foreach (var t in tratamientosFiltrados) seleccionados.Add(t.Id);
+    }
+
+    private async Task GuardarAsignaciones()
+    {
+        if (cursoSeleccionado == null) return;
+        guardando = true;
+        var req = new CrearDetalleTratamientoCursoRequest(cursoSeleccionado.Id, seleccionados.ToList());
+        var r = await DetalleApiClient.CrearVariosAsync(req, _cts.Token);
+        guardando = false;
+        if (r.EsExitoso)
+        {
+            mostrarModalTratamientos = false;
+            await CargarCursos();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private async Task CambiarEstadoDetalle(long idDetalle, int estado)
+    {
+        guardando = true;
+        var req = new ActualizarEstadoDetalleTratamientoCursoRequest(idDetalle, estado);
+        var r = await DetalleApiClient.ActualizarEstadoAsync(req, _cts.Token);
+        guardando = false;
+        if (!r.EsExitoso) mensajeError = r.Error;
+    }
+
+    protected override async Task OnInitializedAsync() => await CargarCursos();
+
+    private async Task CargarCursos()
+    {
+        var r = await CursoApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) cursos = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+
+    private void Nuevo()
+    {
+        idEdicion = null;
+        modelo = new CrearCursoRequest();
+        mostrarFormulario = true;
+    }
+
+    private async Task Editar(CursoResponse item)
+    {
+        var r = await CursoApiClient.ObtenerPorIdAsync(item.Id, _cts.Token);
+        if (!r.EsExitoso) { mensajeError = r.Error; return; }
+
+        idEdicion = item.Id;
+        modelo = new CrearCursoRequest(
+            r.Valor!.Nombre, r.Valor.CodigoCurso, r.Valor.Ciclo, r.Valor.Sis, r.Valor.Estado);
+        mostrarFormulario = true;
+    }
+
+    private void ConfirmarEliminar(CursoResponse item) => itemAEliminar = item;
+
+    private async Task EliminarConfirmado()
+    {
+        if (itemAEliminar == null) return;
+        guardando = true;
+        var r = await CursoApiClient.EliminarAsync(itemAEliminar.Id, _cts.Token);
+        guardando = false;
+
+        if (r.EsExitoso)
+        {
+            itemAEliminar = null;
+            await CargarCursos();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private void Cancelar() => mostrarFormulario = false;
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        ApiResult resultado;
+
+        if (idEdicion == null)
+        {
+            var r = await CursoApiClient.CrearAsync(modelo, _cts.Token);
+            resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
+        }
+        else
+        {
+            var req = new ActualizarCursoRequest(modelo.Nombre, modelo.CodigoCurso, modelo.Ciclo, modelo.Sis, modelo.Estado);
+            resultado = await CursoApiClient.ActualizarAsync(idEdicion.Value, req, _cts.Token);
+        }
+
+        guardando = false;
+
+        if (resultado.EsExitoso)
+        {
+            mostrarFormulario = false;
+            await CargarCursos();
+        }
+        else mensajeError = resultado.Error;
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

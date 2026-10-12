@@ -1,0 +1,540 @@
+﻿@page "/tratamientos"
+@using UW.AdminPagoExpress.Client.Components.Shared
+@using UW.AdminPagoExpress.Shared.Common
+@using UW.AdminPagoExpress.Shared.Interfaces
+@using UW.AdminPagoExpress.Shared.Request
+@using UW.AdminPagoExpress.Shared.Response
+@inject ITratamientoApiClient TratamientoApiClient
+@inject IJSRuntime JS
+@inject ICategoriaApiClient CategoriaApiClient
+@inject IComposicionTratamientoApiClient ComposicionApiClient
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Tratamientos</PageTitle>
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-clipboard2-pulse text-primary me-2"></i> Mantenedor de Tratamientos
+        </h3>
+        <button class="btn btn-primary" @onclick="Nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Tratamiento
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+            <button type="button" class="btn-close" @onclick="() => mensajeError = null"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <DataTable TItem="TratamientoResponse"
+                       TableId="tablaTratamientos"
+                       Items="tratamientos"
+                       Columns="columnas">
+                <Acciones>
+                    <button class="btn btn-sm btn-warning me-1"
+                            title="Editar"
+                            @onclick="() => Editar(context)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-info me-1" title="Composición" @onclick="() => AbrirModalComposicion(context)">
+                        <i class="bi bi-box-seam"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger"
+                            title="Eliminar"
+                            @onclick="() => ConfirmarEliminar(context)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </Acciones>
+            </DataTable>
+            <div class="mt-3">
+                <div class="accordion" id="accordionComposiciones">
+                    @foreach (var t in tratamientos)
+                    {
+                        var compId = $"comp-{t.Id}";
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-@compId">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@compId" aria-expanded="false" aria-controls="collapse-@compId">
+                                    @t.Nombre
+                                </button>
+                            </h2>
+                            <div id="collapse-@compId" class="accordion-collapse collapse" aria-labelledby="heading-@compId" data-bs-parent="#accordionComposiciones">
+                                <div class="accordion-body">
+                                    @* Mostrar lista de composiciones si existen *@
+                                    @if (composicionesPorPadre.TryGetValue(t.Id, out var lista) && lista.Any())
+                                    {
+                                        <ul>
+                                            @foreach (var c in lista)
+                                            {
+                                                <li>ID Composición: @c.IdComposicion - Relacionado: @c.IdTratamiento - Código: @c.CodigoOracle - Cant: @c.Cantidad - Unidad: @c.UnidadMedida</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted">Sin composición</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal de composición *@
+@if (mostrarModalComposicion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5); z-index: 1060;">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Composición del tratamiento: @tratamientoSeleccionado?.Nombre</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalComposicion"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input class="form-control" placeholder="Buscar tratamientos..." @bind="filtroComp" />
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="tablaComposicion" class="table table-striped table-hover table-bordered align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:40px;"><input type="checkbox" @onclick="ToggleSeleccionTodosComp" /></th>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Código Oracle</th>
+                                    <th>Cantidad</th>
+                                    <th>Unidad</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in tratamientosFiltradosComp)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" checked="@seleccionadosComp.Contains(t.Id)" @onchange="(e) => ToggleSeleccionComp(t.Id, e.Value)" /></td>
+                                        <td>@t.Id</td>
+                                        <td>@t.Nombre</td>
+                                        <td>
+                                            <InputText Value="GetTempCodigoOracle(t.Id)" ValueChanged="@(v => SetTempCodigoOracle(t.Id, v))" class="form-control form-control-sm" />
+                                        </td>
+                                        <td>
+                                            <InputNumber @bind-Value="BindTempCantidad[t.Id]" class="form-control form-control-sm" />
+                                        </td>
+                                        <td>
+                                            <InputText Value="GetTempUnidadMedida(t.Id)" ValueChanged="@(v => SetTempUnidadMedida(t.Id, v))" class="form-control form-control-sm" />
+                                        </td>
+                                        <td>
+                                            @if (composicionPorRelacionado.TryGetValue(t.Id, out var c))
+                                            {
+                                                <select class="form-select form-select-sm" @onchange="(e) => CambiarEstadoComposicion(c.IdComposicion, int.Parse(e.Value.ToString()))" value="@c.IdComposicion">
+                                                    <option value="1">Activo</option>
+                                                    <option value="0">Inactivo</option>
+                                                </select>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalComposicion">Cerrar</button>
+                    <button class="btn btn-success" @onclick="GuardarComposicion" disabled="@guardando">@(guardando ? "Guardando..." : "Guardar composición")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background: rgba(0,0,0,.5); z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        @(idEdicion == null ? "Nuevo Tratamiento" : "Editar Tratamiento")
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            @onclick="Cancelar"></button>
+                </div>
+                <EditForm Model="modelo" OnValidSubmit="Guardar">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nombre *</label>
+                                <InputText @bind-Value="modelo.Nombre" class="form-control" placeholder="Ingrese el nombre" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Categoría *</label>
+                                <CategorySelect Items="categorias"
+                                                SelectedId="modelo.IdCategoria"
+                                                SelectedIdChanged="@(v => modelo.IdCategoria = v)"
+                                                Placeholder="Seleccione categoría" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Historia Clínica</label>
+                                <InputSelect @bind-Value="modelo.HistoriaClinica" class="form-select">
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Venta Libre</label>
+                                <InputSelect @bind-Value="modelo.VentaLibre" class="form-select">
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Estado</label>
+                                <InputSelect @bind-Value="modelo.Estado" class="form-select">
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success" disabled="@guardando">
+                                <i class="bi bi-check-circle me-1"></i> @(guardando ? "Guardando..." : "Guardar")
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (itemAEliminar != null)
+{
+    <div class="modal fade show d-block" style="background:rgba(0,0,0,0.5)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro que desea eliminar el tratamiento <strong>@itemAEliminar.Nombre</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => itemAEliminar = null">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">
+                        @(guardando ? "Eliminando..." : "Eliminar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Composición modal
+    private bool mostrarModalComposicion = false;
+    private TratamientoResponse? tratamientoSeleccionado;
+    private List<TratamientoResponse> tratamientosAll = new();
+    private List<TratamientoResponse> tratamientos = new();
+    private List<TratamientoResponse> tratamientosFiltradosComp => string.IsNullOrWhiteSpace(filtroComp) ? tratamientosAll : tratamientosAll.Where(t => t.Nombre != null && t.Nombre.Contains(filtroComp, StringComparison.OrdinalIgnoreCase)).ToList();
+    private string filtroComp = string.Empty;
+
+    // Al abrir modal, cargamos composiciones existentes para el tratamiento seleccionado
+    private List<ComposicionTratamientoResponse> composicionesExistentes = new();
+    private Dictionary<long, ComposicionTratamientoResponse> composicionPorRelacionado = new(); // key: idTratamientoRelacionado for current modal
+    private Dictionary<long, List<ComposicionTratamientoResponse>> composicionesPorPadre = new(); // key: idTratamientoPadre for accordion
+
+    // Selección y edición
+    private HashSet<long> seleccionadosComp = new();
+    private Dictionary<long, ComposicionItemRequest> tempItems = new(); // key: idTratamientoRelacionado -> valores temporales
+    private Dictionary<long, decimal> BindTempCantidad = new();
+
+    private async Task AbrirModalComposicion(TratamientoResponse tratamiento)
+    {
+        tratamientoSeleccionado = tratamiento;
+        mostrarModalComposicion = true;
+        composicionesExistentes.Clear();
+        composicionPorRelacionado.Clear();
+        seleccionadosComp.Clear();
+        tempItems.Clear();
+
+        var r = await ComposicionApiClient.ListarTratamientosAsync(_cts.Token);
+        if (r.EsExitoso) tratamientosAll = r.Valor ?? new();
+        else mensajeError = r.Error;
+
+        var d = await ComposicionApiClient.ListarPorTratamientoAsync(tratamiento.Id, _cts.Token);
+        if (d.EsExitoso && d.Valor != null)
+        {
+            composicionesExistentes = d.Valor;
+            composicionPorRelacionado.Clear();
+            foreach (var c in composicionesExistentes)
+            {
+                // map by related tratamiento id for quick lookup in modal
+                composicionPorRelacionado[c.IdTratamiento] = c;
+                seleccionadosComp.Add(c.IdTratamiento);
+                tempItems[c.IdTratamiento] = new ComposicionItemRequest { IdTratamiento = c.IdTratamiento, CodigoOracle = c.CodigoOracle, Cantidad = c.Cantidad, UnidadMedida = c.UnidadMedida };
+                BindTempCantidad[c.IdTratamiento] = c.Cantidad;
+            }
+        }
+        // esperar render para inicializar DataTable
+        StateHasChanged();
+        await Task.Delay(50);
+        try { await JS.InvokeVoidAsync("AppDataTable.init", "tablaComposicion"); } catch { }
+    }
+    private async Task CerrarModalComposicion()
+    {
+        try { await JS.InvokeVoidAsync("AppDataTable.destroy", "tablaComposicion"); } catch { }
+        mostrarModalComposicion = false;
+        StateHasChanged();
+    }
+
+    private void ToggleSeleccionComp(long idRelacionado, object? value)
+    {
+        var isChecked = value as bool? ?? false;
+        if (isChecked)
+        {
+            seleccionadosComp.Add(idRelacionado);
+            if (!tempItems.ContainsKey(idRelacionado))
+                tempItems[idRelacionado] = new ComposicionItemRequest { IdTratamiento = idRelacionado, CodigoOracle = string.Empty, Cantidad = 1, UnidadMedida = string.Empty };
+            if (!BindTempCantidad.ContainsKey(idRelacionado)) BindTempCantidad[idRelacionado] = 1;
+        }
+        else
+        {
+            seleccionadosComp.Remove(idRelacionado);
+            tempItems.Remove(idRelacionado);
+            BindTempCantidad.Remove(idRelacionado);
+        }
+    }
+
+    private void ToggleSeleccionTodosComp()
+    {
+        if (tratamientosFiltradosComp.All(t => seleccionadosComp.Contains(t.Id)))
+            foreach (var t in tratamientosFiltradosComp) seleccionadosComp.Remove(t.Id);
+        else
+            foreach (var t in tratamientosFiltradosComp)
+            {
+                seleccionadosComp.Add(t.Id);
+                if (!tempItems.ContainsKey(t.Id)) tempItems[t.Id] = new ComposicionItemRequest { IdTratamiento = t.Id, CodigoOracle = string.Empty, Cantidad = 1, UnidadMedida = string.Empty };
+            }
+    }
+
+    private async Task GuardarComposicion()
+    {
+        if (tratamientoSeleccionado == null) return;
+        guardando = true;
+        // Ensure cantidades del binding estén sincronizadas
+        foreach (var k in BindTempCantidad.Keys.ToList())
+        {
+            if (tempItems.ContainsKey(k)) tempItems[k].Cantidad = BindTempCantidad[k];
+        }
+        var items = tempItems.Where(kv => seleccionadosComp.Contains(kv.Key)).Select(kv => kv.Value).ToList();
+        var req = new CrearComposicionTratamientoRequest { IdTratamiento = tratamientoSeleccionado.Id, Items = items };
+        var r = await ComposicionApiClient.CrearVariosAsync(req, _cts.Token);
+        guardando = false;
+        if (r.EsExitoso)
+        {
+            mostrarModalComposicion = false;
+            await CargarTratamientos();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private async Task CambiarEstadoComposicion(long idComposicion, int estado)
+    {
+        guardando = true;
+        var req = new ActualizarEstadoComposicionTratamientoRequest(idComposicion, estado);
+        var r = await ComposicionApiClient.ActualizarEstadoAsync(req, _cts.Token);
+        guardando = false;
+        if (!r.EsExitoso) mensajeError = r.Error;
+    }
+
+    // Helpers para binding de inputs sin usar operador ?.
+    private string GetTempCodigoOracle(long id)
+    {
+        if (!tempItems.TryGetValue(id, out var item)) return string.Empty;
+        return item.CodigoOracle;
+    }
+
+    private void SetTempCodigoOracle(long id, string value)
+    {
+        if (!tempItems.ContainsKey(id)) tempItems[id] = new ComposicionItemRequest { IdTratamiento = id };
+        tempItems[id].CodigoOracle = value ?? string.Empty;
+    }
+
+    private decimal GetTempCantidad(long id)
+    {
+        if (!tempItems.TryGetValue(id, out var item)) return 1;
+        return item.Cantidad;
+    }
+
+    private void SetTempCantidad(long id, decimal value)
+    {
+        if (!tempItems.ContainsKey(id)) tempItems[id] = new ComposicionItemRequest { IdTratamiento = id };
+        tempItems[id].Cantidad = value;
+    }
+
+    private string GetTempUnidadMedida(long id)
+    {
+        if (!tempItems.TryGetValue(id, out var item)) return string.Empty;
+        return item.UnidadMedida;
+    }
+
+    private void SetTempUnidadMedida(long id, string value)
+    {
+        if (!tempItems.ContainsKey(id)) tempItems[id] = new ComposicionItemRequest { IdTratamiento = id };
+        tempItems[id].UnidadMedida = value ?? string.Empty;
+    }
+
+    private List<CategoriaResponse> categorias = new();
+    private CrearTratamientoRequest modelo = new();
+    private TratamientoResponse? itemAEliminar;
+    private long? idEdicion;
+    private bool mostrarFormulario = false;
+    private bool guardando = false;
+    private string? mensajeError;
+    private CancellationTokenSource _cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTratamientos();
+        await CargarCategorias();
+        await CargarTodasComposiciones();
+    }
+
+    private async Task CargarCategorias()
+    {
+        var r = await CategoriaApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) categorias = r.Valor ?? new();
+        else mensajeError = r.Error;
+    }
+    private void ConfirmarEliminar(TratamientoResponse item) => itemAEliminar = item;
+
+    private List<DataTableColumn<TratamientoResponse>> columnas = new()
+    {
+        new() { Titulo = "ID",              Valor = t => t.Id },
+        new() { Titulo = "Nombre",          Valor = t => t.Nombre },
+        new() { Titulo = "Historia Clínica", Valor = t => t.HistoriaClinica == "1" ? "Sí" : "No" },
+        new() { Titulo = "Venta Libre",     Valor = t => t.VentaLibre == "1" ? "Sí" : "No" },
+        new() { Titulo = "Estado",
+                Valor = t => t.Estado == "1"
+                    ? "<span class='badge bg-success'>Activo</span>"
+                    : "<span class='badge bg-secondary'>Inactivo</span>",
+                EsHtml = true },
+        new() { Titulo = "ID Categoría",    Valor = t => t.IdCategoria }
+    };
+
+
+
+    private async Task CargarTratamientos()
+    {
+        var r = await TratamientoApiClient.ListarAsync(_cts.Token);
+        if (r.EsExitoso) tratamientos = r.Valor;
+        else mensajeError = r.Error;
+    }
+
+    private async Task CargarTodasComposiciones()
+    {
+        var r = await ComposicionApiClient.ListarTodasAsync(_cts.Token);
+        if (r.EsExitoso && r.Valor != null)
+        {
+            composicionesPorPadre.Clear();
+            foreach (var c in r.Valor)
+            {
+                if (!composicionesPorPadre.ContainsKey(c.IdTratamiento)) composicionesPorPadre[c.IdTratamiento] = new List<ComposicionTratamientoResponse>();
+                composicionesPorPadre[c.IdTratamiento].Add(c);
+            }
+        }
+    }
+
+    private void Nuevo()
+    {
+        idEdicion = null;
+        modelo = new CrearTratamientoRequest();
+        mostrarFormulario = true;
+    }
+
+    private async Task Editar(TratamientoResponse item)
+    {
+        var r = await TratamientoApiClient.ObtenerPorIdAsync(item.Id, _cts.Token);
+        if (!r.EsExitoso) { mensajeError = r.Error; return; }
+
+        idEdicion = item.Id;
+        modelo = new CrearTratamientoRequest(
+            r.Valor.Nombre, r.Valor.HistoriaClinica, r.Valor.Estado,
+            r.Valor.VentaLibre, r.Valor.IdCategoria);
+        mostrarFormulario = true;
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        if (itemAEliminar == null) return;
+        guardando = true;
+        var r = await TratamientoApiClient.EliminarAsync(itemAEliminar.Id, _cts.Token);
+        guardando = false;
+
+        if (r.EsExitoso)
+        {
+            itemAEliminar = null;
+            await CargarTratamientos();
+        }
+        else mensajeError = r.Error;
+    }
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        ApiResult resultado;
+
+        if (idEdicion == null)
+        {
+            var r = await TratamientoApiClient.CrearAsync(modelo, _cts.Token);
+            resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error);
+        }
+        else
+        {
+            var req = new ActualizarTratamientoRequest(
+                modelo.Nombre, modelo.HistoriaClinica, modelo.Estado,
+                modelo.VentaLibre, modelo.IdCategoria);
+            resultado = await TratamientoApiClient.ActualizarAsync(idEdicion.Value, req, _cts.Token);
+        }
+
+        guardando = false;
+
+        if (resultado.EsExitoso)
+        {
+            mostrarFormulario = false;
+            await CargarTratamientos();
+        }
+        else mensajeError = resultado.Error;
+    }
+
+    private void Cancelar() => mostrarFormulario = false;
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

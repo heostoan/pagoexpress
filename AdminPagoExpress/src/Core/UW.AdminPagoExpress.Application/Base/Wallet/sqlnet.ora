@@ -1,0 +1,2 @@
+WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY="C:\Users\juxnf\source\repos\Trabajos Wiener\Wallet_dbneoradev")))
+SSL_SERVER_DN_MATCH=no

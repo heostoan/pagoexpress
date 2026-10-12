@@ -1,0 +1,41 @@
+﻿@using UW.AdminPagoExpress.Shared.Dtos.ChatBox
+
+@if (Categories != null)
+{ 
+    @foreach (var category in Categories)
+    {
+        <div class="accordion" id="accordionCategorias-@category.IdCategoria">
+            @if (@category.Modalidad != null)
+            {
+                <span>@category.Modalidad</span>
+            }
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-@category.IdCategoria">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-@category.IdCategoria"
+                            aria-expanded="false"
+                            aria-controls="collapse-@category.IdCategoria">
+                        @category.Nombre
+                    </button>
+                    <a class="btn btn-sm btn-primary" href="/actualizarcategory/@category.IdCategoria">Editar</a>
+                    <a class="btn btn-sm btn-danger" href="/eliminarcategory/@category.IdCategoria">Eliminar</a>
+                </h2>
+                <div id="collapse-@category.IdCategoria" aria-labelledby="heading-@category.IdCategoria" class="accordion-collapse collapse" data-bs-parent="#accordionCategorias-@category.IdCategoria">
+                    <div class="accordion-body">
+                        @if (category.HasChildren)
+                        {
+                            <CategoriesComponent Categories="category.Children" />
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<CategoriesDTO>? Categories { get; set; }
+}

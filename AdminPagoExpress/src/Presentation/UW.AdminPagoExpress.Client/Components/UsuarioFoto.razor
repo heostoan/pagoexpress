@@ -1,0 +1,52 @@
+﻿@using UW.AdminPagoExpress.Shared.Interfaces
+@inject IUserService UserService
+
+@if (!string.IsNullOrWhiteSpace(UserPhoto))
+{
+    <img src="@($"data:image/png;base64,{UserPhoto}")" alt="User Photo" width="100%" height="100%"/>
+}
+else
+{
+    <UsuarioSinFoto Iniciales="@ObtenerIniciales(Nombres)"/>
+}
+
+@code {
+    [Parameter] public string Nombres { get; set; }
+    private string UserPhoto { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            UserPhoto = await UserService.GetUserPhotoAsync();
+            StateHasChanged();
+        }
+    }
+
+    public static string ObtenerIniciales(string nombreCompleto)
+    {
+        if (string.IsNullOrWhiteSpace(nombreCompleto) || nombreCompleto == "Nombres")
+        {
+            return string.Empty; // Si el nombre está vacío o es nulo, devolvemos vacío
+        }
+
+        // Dividimos el nombre completo en palabras
+        var palabras = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        // Si no hay palabras, devolvemos vacío
+        if (palabras.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        // Obtenemos la inicial del primer nombre
+        var inicialNombre = palabras[0][0].ToString().ToUpper();
+
+        // Obtenemos la inicial del primer apellido si existe
+        var inicialApellido = palabras.Length > 1 ? palabras[1][0].ToString().ToUpper() : string.Empty;
+
+        // Retornamos las iniciales concatenadas
+        return inicialNombre + inicialApellido;
+    }
+
+}

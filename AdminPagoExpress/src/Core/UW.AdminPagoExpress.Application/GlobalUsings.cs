@@ -1,0 +1,10 @@
+﻿global using ErrorOr;
+global using FluentValidation;
+global using Mapster;
+global using MapsterMapper;
+global using MediatR;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.Extensions.DependencyInjection;
+global using Serilog;
+global using UW.AdminPagoExpress.Application.Common;
+global using UW.AdminPagoExpress.Application.Interfaces.Persistence;
