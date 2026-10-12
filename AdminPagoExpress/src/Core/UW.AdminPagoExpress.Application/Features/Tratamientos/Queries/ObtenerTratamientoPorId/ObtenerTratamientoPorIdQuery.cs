@@ -19,13 +19,14 @@ public class ObtenerTratamientoPorIdQueryHandler
     public async Task<Result<TratamientoResponse>> Handle(
         ObtenerTratamientoPorIdQuery request, CancellationToken cancellationToken)
     {
-        var tratamiento = await _tratamientoRepository.ObtenerPorIdAsync(request.Id, cancellationToken);
-        if (tratamiento is null)
+        var t = await _tratamientoRepository.ObtenerPorIdAsync(request.Id, cancellationToken);
+        if (t is null)
             return Result.Failure<TratamientoResponse>(TratamientoErrors.NoEncontrado);
 
         var response = new TratamientoResponse(
-            tratamiento.Id, tratamiento.Nombre, tratamiento.HistoriaClinica,
-            tratamiento.Estado, tratamiento.VentaLibre, tratamiento.IdCategoria);
+            t.Id, t.Nombre, t.HistoriaClinica,
+            t.Estado, t.VentaLibre, t.IdCategoria, t.Categoria?.Nombre ?? "(sin nombre)"
+        );
 
         return Result.Success(response);
     }

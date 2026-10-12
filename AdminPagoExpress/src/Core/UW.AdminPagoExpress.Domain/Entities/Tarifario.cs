@@ -9,6 +9,7 @@ public class Tarifario
     public string CodigoSpring { get; private set; }
     public string CodigoOracle { get; private set; }
     public long IdTratamiento { get; private set; }
+    public Tratamiento? Tratamiento { get; set; }
 
     private Tarifario() { }
 

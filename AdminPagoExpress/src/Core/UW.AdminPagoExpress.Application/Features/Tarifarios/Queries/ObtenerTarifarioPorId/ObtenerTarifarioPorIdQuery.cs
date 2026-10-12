@@ -19,7 +19,7 @@ public class ObtenerTarifarioPorIdQueryHandler : IRequestHandler<ObtenerTarifari
     {
         var t = await _tarifarioRepository.ObtenerPorIdAsync(request.Id, cancellationToken);
         if (t is null) return Result.Failure<TarifarioResponse>(TarifarioErrors.NoEncontrado);
-        var resp = new TarifarioResponse(t.Id, t.PrecioAlumno, t.PrecioExterno, t.PrecioEmpleado, t.CodigoSpring, t.CodigoOracle, t.IdTratamiento);
+        var resp = new TarifarioResponse(t.Id, t.PrecioAlumno, t.PrecioExterno, t.PrecioEmpleado, t.CodigoSpring, t.CodigoOracle, t.IdTratamiento, t.Tratamiento?.Nombre ?? "(sin nombre)");
         return Result.Success(resp);
     }
 }

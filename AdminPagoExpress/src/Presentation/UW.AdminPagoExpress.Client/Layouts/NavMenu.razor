@@ -1,5 +1,7 @@
 ﻿@rendermode @(new InteractiveWebAssemblyRenderMode(false))
 
+@inject NavigationManager Nav
+
 <div class="menu-container">
 
     <!-- Logo -->
@@ -38,7 +40,31 @@
         </NavLink>
     </nav>
 
-    <!-- Footer -->
-    <div class="menu-footer">© @DateTime.Now.Year</div>
+    <!-- 🔥 Cerrar Sesión + Footer -->
+    <div class="menu-bottom">
+
+        <button type="button" class="menu-item menu-logout" @onclick="CerrarSesion">
+            <span class="material-symbols-rounded menu-icon">logout</span>
+            <span class="menu-text">Cerrar Sesión</span>
+        </button>
+
+        <div class="menu-footer">© @DateTime.Now.Year</div>
+    </div>
 
 </div>
+
+@code {
+    private async Task CerrarSesion()
+    {
+        // 🔓 Sin lógica por ahora: solo navega al login
+        // Aquí después podrías:
+        // - Limpiar cookies / localStorage
+        // - Llamar al endpoint de logout
+        // - Notificar al AuthStateProvider
+
+        Console.WriteLine("Cerrando sesión...");
+        await Task.Delay(200);
+
+        Nav.NavigateTo("/login", replace: true);
+    }
+}

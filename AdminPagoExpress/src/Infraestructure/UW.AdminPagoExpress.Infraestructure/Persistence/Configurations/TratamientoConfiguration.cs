@@ -48,9 +48,14 @@ public class TratamientoConfiguration : IEntityTypeConfiguration<Tratamiento>
             .IsRequired();
 
         // Relación con Categoría (FK)
-        builder.HasOne<Categoria>() // Asumiendo que existe la entidad Categoria
+        /*builder.HasOne<Categoria>() // Asumiendo que existe la entidad Categoria
             .WithMany()
             .HasForeignKey(t => t.IdCategoria)
-            .HasConstraintName("FK_TRATAMIENTO_CATEGORIA");
+            .HasConstraintName("FK_TRATAMIENTO_CATEGORIA");*/
+
+        builder.HasOne(t => t.Categoria)
+              .WithMany()
+              .HasForeignKey(t => t.IdCategoria)
+              .HasConstraintName("FK_TRATAMIENTO_CATEGORIA");
     }
 }

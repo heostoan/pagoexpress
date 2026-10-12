@@ -23,6 +23,14 @@
         </button>
     </div>
 
+    @if (!string.IsNullOrEmpty(mensajeExito))
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i> @mensajeExito
+            <button type="button" class="btn-close" @onclick="() => mensajeExito = null"></button>
+        </div>
+    }
+
     @if (!string.IsNullOrEmpty(mensajeError))
     {
         <div class="alert alert-danger alert-dismissible fade show">
@@ -36,7 +44,8 @@
             <DataTable TItem="TarifarioResponse"
                        TableId="tablaTarifarios"
                        Items="tarifarios"
-                       Columns="columnas">
+                       Columns="columnas"
+                       RefreshKey="_refreshKey">
                 <Acciones>
                     <button class="btn btn-sm btn-warning me-1" title="Editar" @onclick="() => Editar(context)">
                         <i class="bi bi-pencil"></i>
@@ -142,6 +151,8 @@
     private bool guardando = false;
     private string? mensajeError;
     private CancellationTokenSource _cts = new();
+    private string? mensajeExito;
+    private int _refreshKey = 0;
 
     private List<DataTableColumn<TarifarioResponse>> columnas = new()
     {
@@ -151,7 +162,7 @@
         new() { Titulo = "Precio Empleado", Valor = t => t.PrecioEmpleado },
         new() { Titulo = "Código Spring", Valor = t => t.CodigoSpring },
         new() { Titulo = "Código Oracle", Valor = t => t.CodigoOracle },
-        new() { Titulo = "ID Tratamiento", Valor = t => t.IdTratamiento },
+        new() { Titulo = "Tratamiento", Valor = t => t.NombreTratamiento },
     };
 
     private List<TratamientoResponse> tratamientos = new();
@@ -172,8 +183,15 @@
     private async Task CargarTarifarios()
     {
         var r = await TarifarioApiClient.ListarAsync(_cts.Token);
-        if (r.EsExitoso) tarifarios = r.Valor ?? new();
-        else mensajeError = r.Error;
+        if (r.EsExitoso)
+        {
+            tarifarios = r.Valor ?? new();
+            _refreshKey++;
+        }
+        else
+        {
+            mensajeError = r.Error;
+        }
     }
 
     private void Nuevo()
@@ -205,9 +223,17 @@
         if (r.EsExitoso)
         {
             itemAEliminar = null;
+            mensajeError = null;
+            mensajeExito = "Tarifario eliminado correctamente.";
+
             await CargarTarifarios();
+            AutoOcultarMensajeExito();
         }
-        else mensajeError = r.Error;
+        else
+        {
+            mensajeError = r.Error;
+            mensajeExito = null;
+        }
     }
 
     private void Cancelar() => mostrarFormulario = false;
@@ -216,8 +242,9 @@
     {
         guardando = true;
         ApiResult resultado;
+        bool esNuevo = idEdicion == null;
 
-        if (idEdicion == null)
+        if (esNuevo)
         {
             var r = await TarifarioApiClient.CrearAsync(modelo, _cts.Token);
             resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
@@ -233,14 +260,36 @@
         if (resultado.EsExitoso)
         {
             mostrarFormulario = false;
+            mensajeError = null;
+            mensajeExito = esNuevo
+                ? "Tarifario creada correctamente."
+                : "Tarifario actualizada correctamente.";
+
             await CargarTarifarios();
+            AutoOcultarMensajeExito();
         }
-        else mensajeError = resultado.Error;
+        else
+        {
+            mensajeError = resultado.Error;
+            mensajeExito = null;
+        }
     }
 
     public void Dispose()
     {
         _cts.Cancel();
         _cts.Dispose();
+    }
+
+    private void AutoOcultarMensajeExito()
+    {
+        _ = Task.Delay(4000).ContinueWith(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                mensajeExito = null;
+                StateHasChanged();
+            });
+        });
     }
 }

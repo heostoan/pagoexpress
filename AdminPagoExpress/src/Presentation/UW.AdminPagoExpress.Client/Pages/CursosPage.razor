@@ -23,6 +23,14 @@
         </button>
     </div>
 
+    @if (!string.IsNullOrEmpty(mensajeExito))
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i> @mensajeExito
+            <button type="button" class="btn-close" @onclick="() => mensajeExito = null"></button>
+        </div>
+    }
+
     @if (!string.IsNullOrEmpty(mensajeError))
     {
         <div class="alert alert-danger alert-dismissible fade show">
@@ -217,6 +225,8 @@
     private bool guardando = false;
     private string? mensajeError;
     private CancellationTokenSource _cts = new();
+    private string? mensajeExito;
+    private int _refreshKey = 0;
 
     private List<DataTableColumn<CursoResponse>> columnas = new()
     {
@@ -310,8 +320,15 @@
     private async Task CargarCursos()
     {
         var r = await CursoApiClient.ListarAsync(_cts.Token);
-        if (r.EsExitoso) cursos = r.Valor ?? new();
-        else mensajeError = r.Error;
+        if (r.EsExitoso)
+        {
+            cursos = r.Valor ?? new();
+            _refreshKey++;
+        }
+        else
+        {
+            mensajeError = r.Error;
+        }
     }
 
     private void Nuevo()
@@ -344,9 +361,17 @@
         if (r.EsExitoso)
         {
             itemAEliminar = null;
+            mensajeError = null;
+            mensajeExito = "Curso eliminado correctamente.";
+            
             await CargarCursos();
+            AutoOcultarMensajeExito();
         }
-        else mensajeError = r.Error;
+        else
+        {
+            mensajeError = r.Error;
+            mensajeExito = null;
+        }
     }
 
     private void Cancelar() => mostrarFormulario = false;
@@ -355,8 +380,9 @@
     {
         guardando = true;
         ApiResult resultado;
+        bool esNuevo = idEdicion == null;
 
-        if (idEdicion == null)
+        if (esNuevo)
         {
             var r = await CursoApiClient.CrearAsync(modelo, _cts.Token);
             resultado = r.EsExitoso ? ApiResult.Success() : ApiResult.Failure(r.Error ?? "");
@@ -372,14 +398,35 @@
         if (resultado.EsExitoso)
         {
             mostrarFormulario = false;
+            mensajeError = null;
+            mensajeExito = esNuevo
+                ? "Curso creado correctamente."
+                : "Curso actualizado correctamente.";
             await CargarCursos();
+            AutoOcultarMensajeExito();
         }
-        else mensajeError = resultado.Error;
+        else
+        {
+            mensajeError = resultado.Error;
+            mensajeExito = null;
+        }
     }
 
     public void Dispose()
     {
         _cts.Cancel();
         _cts.Dispose();
+    }
+
+    private void AutoOcultarMensajeExito()
+    {
+        _ = Task.Delay(4000).ContinueWith(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                mensajeExito = null;
+                StateHasChanged();
+            });
+        });
     }
 }

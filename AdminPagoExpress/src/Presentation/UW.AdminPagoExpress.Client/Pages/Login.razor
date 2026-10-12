@@ -1,0 +1,178 @@
+﻿@page "/"
+@page "/login"
+@layout EmptyLayout
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+
+@inject NavigationManager Nav
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="login-header">
+            <img src="./Images/Logo-Wiener.svg" alt="Logo" class="login-logo" />
+            <h1 class="login-title">Admin PagoExpress</h1>
+            <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <!-- Formulario -->
+        <EditForm Model="_model" OnValidSubmit="IniciarSesion">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <InputText class="form-control"
+                               placeholder="Ingresa tu usuario"
+                               @bind-Value="_model.Usuario" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-lock"></i>
+                    </span>
+                    <InputText type="password"
+                               class="form-control"
+                               placeholder="Ingresa tu contraseña"
+                               @bind-Value="_model.Password" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="recordar" />
+                    <label class="form-check-label" for="recordar">Recordarme</label>
+                </div>
+                <a href="#" class="text-decoration-none small">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Iniciar sesión
+            </button>
+        </EditForm>
+
+        <div class="login-footer">
+            © @DateTime.Now.Year — Universidad Norbert Wiener
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    .login-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 40px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .08);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .login-logo {
+        max-width: 160px;
+        margin-bottom: 16px;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #172033;
+        margin: 0 0 6px 0;
+    }
+
+    .login-subtitle {
+        font-size: .9rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .form-label {
+        font-size: .88rem;
+        font-weight: 600;
+        color: #172033;
+    }
+
+    .input-group-text {
+        border-right: 0;
+        color: #0d6efd;
+    }
+
+    .form-control {
+        border-left: 0;
+        font-size: .95rem;
+        padding: 10px 12px;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+    .input-group:focus-within {
+        box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .12);
+        border-radius: 8px;
+    }
+
+    .btn-primary {
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .login-footer {
+        text-align: center;
+        font-size: .78rem;
+        color: #adb5bd;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+</style>
+
+@code {
+    private LoginModel _model = new();
+
+    private async Task IniciarSesion()
+    {
+        // 🔓 Sin lógica por ahora: solo navega
+        Console.WriteLine($"Usuario: {_model.Usuario}, Password: {_model.Password}");
+
+        // Simular un pequeño delay para que se sienta realista
+        await Task.Delay(300);
+
+        // 🔥 Navegar a una de las páginas CRUD existentes
+        Nav.NavigateTo("/tarifarios");
+    }
+
+    public class LoginModel
+    {
+        public string Usuario { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

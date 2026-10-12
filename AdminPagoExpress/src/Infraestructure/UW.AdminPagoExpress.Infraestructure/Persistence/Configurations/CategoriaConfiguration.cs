@@ -16,7 +16,8 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
             .HasColumnName("ID_CATEGORIA")
             .HasColumnType("NUMBER")
             .ValueGeneratedOnAdd()
-            .UseSequence("SEQ_CATEGORIAS_CO"); // Ajusta al nombre real de tu secuencia en Oracle
+            //.UseSequence("SEQ_CATEGORIAS_CO")
+            ;
 
         builder.Property(c => c.Nombre)
             .HasColumnName("NOMBRE")

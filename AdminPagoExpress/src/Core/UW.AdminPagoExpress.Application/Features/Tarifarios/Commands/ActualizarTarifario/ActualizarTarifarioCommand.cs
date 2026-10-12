@@ -30,9 +30,9 @@ public class ActualizarTarifarioCommandHandler : IRequestHandler<ActualizarTarif
         if (tarifario is null)
             return Result.Failure(TarifarioErrors.NoEncontrado);
 
-        bool existe = await _tarifarioRepository.ExisteCodigoAsync(command.CodigoSpring, command.CodigoOracle, command.Id, cancellationToken);
+        /*bool existe = await _tarifarioRepository.ExisteCodigoAsync(command.CodigoSpring, command.CodigoOracle, command.Id, cancellationToken);
         if (existe)
-            return Result.Failure(TarifarioErrors.CodigoDuplicado);
+            return Result.Failure(TarifarioErrors.CodigoDuplicado);*/
 
         tarifario.Actualizar(command.PrecioAlumno, command.PrecioExterno, command.PrecioEmpleado, command.CodigoSpring, command.CodigoOracle, command.IdTratamiento);
 

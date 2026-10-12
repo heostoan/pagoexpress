@@ -15,7 +15,8 @@ public class CursoConfiguration : IEntityTypeConfiguration<Curso>
             .HasColumnName("ID_CURSO")
             .HasColumnType("NUMBER")
             .ValueGeneratedOnAdd()
-            .UseSequence("SEQ_CURSOS_CO");
+            //.UseSequence("SEQ_CURSOS_CO")
+            ;
 
         builder.Property(c => c.Nombre)
             .HasColumnName("NOMBRE")

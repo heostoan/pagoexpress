@@ -6,5 +6,6 @@ public record TratamientoResponse(
     string HistoriaClinica,
     string Estado,
     string VentaLibre,
-    long IdCategoria
+    long IdCategoria,
+    string NombreCategoria
 );

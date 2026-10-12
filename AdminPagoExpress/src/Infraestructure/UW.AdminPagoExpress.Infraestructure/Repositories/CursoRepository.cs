@@ -20,9 +20,21 @@ public class CursoRepository : ICursoRepository
         => await _context.Cursos.AsNoTracking().ToListAsync(cancellationToken);
 
     public async Task<bool> ExisteNombreAsync(string nombre, long? idExcluir, CancellationToken cancellationToken)
-        => await _context.Cursos
+    {
+        var query = _context.Cursos
             .AsNoTracking()
-            .AnyAsync(c => c.Nombre == nombre && (idExcluir == null || c.Id != idExcluir), cancellationToken);
+            .Where(t => t.Nombre == nombre);
+
+        if (idExcluir.HasValue)
+        {
+            var id = idExcluir.Value;
+            query = query.Where(t => t.Id != id);
+        }
+
+        // 🔥 Usar CountAsync en lugar de AnyAsync
+        var count = await query.CountAsync(cancellationToken);
+        return count > 0;
+    }
 
     public void Agregar(Curso curso) => _context.Cursos.Add(curso);
     public void Actualizar(Curso curso) => _context.Cursos.Update(curso);

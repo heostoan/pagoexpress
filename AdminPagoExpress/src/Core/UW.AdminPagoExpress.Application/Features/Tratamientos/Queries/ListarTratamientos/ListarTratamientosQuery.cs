@@ -1,4 +1,5 @@
 ﻿using UW.AdminPagoExpress.Application.Interfaces.Persistence;
+using UW.AdminPagoExpress.Domain.Entities;
 using UW.AdminPagoExpress.Shared.Response;
 using Result = UW.AdminPagoExpress.Application.Common.Result;
 
@@ -21,10 +22,15 @@ public class ListarTratamientosQueryHandler
     {
         var tratamientos = await _tratamientoRepository.ListarAsync(cancellationToken);
 
-        var response = tratamientos
-            .Select(t => new TratamientoResponse(
-                t.Id, t.Nombre, t.HistoriaClinica, t.Estado, t.VentaLibre, t.IdCategoria))
-            .ToList();
+        var response = tratamientos.Select(t => new TratamientoResponse(
+            t.Id,
+            t.Nombre    ,
+            t.HistoriaClinica,
+            t.Estado,
+            t.VentaLibre,
+            t.IdCategoria,
+            t.Categoria?.Nombre ?? "(sin nombre)"
+        )).ToList();
 
         return Result.Success(response);
     }

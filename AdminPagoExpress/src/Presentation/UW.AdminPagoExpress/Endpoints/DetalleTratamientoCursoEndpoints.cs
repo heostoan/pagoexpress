@@ -14,7 +14,7 @@ public static class DetalleTratamientoCursoEndpoints
         group.MapGet("/tratamientos", async (ITratamientoRepository repo, CancellationToken ct) =>
         {
             var list = await repo.ListarAsync(ct);
-            var resp = list.Select(t => new TratamientoResponse(t.Id, t.Nombre, t.HistoriaClinica, t.Estado, t.VentaLibre, t.IdCategoria)).ToList();
+            var resp = list.Select(t => new TratamientoResponse(t.Id, t.Nombre, t.HistoriaClinica, t.Estado, t.VentaLibre, t.IdCategoria,t.Categoria?.Nombre ?? "(sin nombre)")).ToList();
             return Results.Ok(resp);
         });
 

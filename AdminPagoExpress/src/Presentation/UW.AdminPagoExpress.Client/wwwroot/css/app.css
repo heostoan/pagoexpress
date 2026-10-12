@@ -224,3 +224,65 @@
     margin-top: 16px;
     border-top: 1px solid rgba(255, 255, 255, .08);
 }
+
+.empty-layout {
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ============================================================
+   CERRAR SESIÓN + FOOTER
+   ============================================================ */
+
+/* Contenedor inferior: empuja al fondo */
+.menu-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Botón de cerrar sesión (mismo estilo que los NavLink) */
+.menu-logout {
+    background: transparent;
+    border: 0;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all .15s ease;
+    font-size: 14px;
+}
+
+    .menu-logout:hover {
+        background-color: rgba(239, 68, 68, .12);
+        color: #fca5a5 !important;
+    }
+
+        .menu-logout:hover .menu-icon {
+            color: #fca5a5;
+        }
+
+/* Footer */
+.menu-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #64748b;
+    padding-top: 12px;
+    margin-top: 8px;
+}

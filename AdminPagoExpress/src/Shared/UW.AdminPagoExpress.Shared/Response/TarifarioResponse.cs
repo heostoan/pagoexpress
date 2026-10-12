@@ -7,5 +7,6 @@ public record TarifarioResponse(
     decimal PrecioEmpleado,
     string CodigoSpring,
     string CodigoOracle,
-    long IdTratamiento
+    long IdTratamiento,
+    string NombreTratamiento
 );

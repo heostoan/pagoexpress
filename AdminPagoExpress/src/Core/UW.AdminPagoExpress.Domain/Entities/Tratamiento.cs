@@ -8,6 +8,7 @@ public class Tratamiento
     public string? Estado { get; private set; }
     public string? VentaLibre { get; private set; }
     public long IdCategoria { get; private set; }
+    public Categoria? Categoria { get; set; }
 
     // Constructor para EF Core
     private Tratamiento() { }

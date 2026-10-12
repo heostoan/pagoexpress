@@ -17,8 +17,19 @@ public class ListarTarifariosQueryHandler : IRequestHandler<ListarTarifariosQuer
 
     public async Task<Result<List<TarifarioResponse>>> Handle(ListarTarifariosQuery request, CancellationToken cancellationToken)
     {
-        var items = await _tarifarioRepository.ListarAsync(cancellationToken);
-        var response = items.Select(t => new TarifarioResponse(t.Id, t.PrecioAlumno, t.PrecioExterno, t.PrecioEmpleado, t.CodigoSpring, t.CodigoOracle, t.IdTratamiento)).ToList();
+        var tarifarios = await _tarifarioRepository.ListarAsync(cancellationToken);
+
+        var response = tarifarios.Select(t => new TarifarioResponse(
+            t.Id,
+            t.PrecioAlumno,
+            t.PrecioExterno,
+            t.PrecioEmpleado,
+            t.CodigoSpring,
+            t.CodigoOracle,
+            t.IdTratamiento,
+            t.Tratamiento?.Nombre ?? "(sin nombre)"
+        )).ToList();
+
         return Result.Success(response);
     }
 }
