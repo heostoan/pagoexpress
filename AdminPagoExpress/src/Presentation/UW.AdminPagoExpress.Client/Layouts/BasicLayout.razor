@@ -1,2 +1,13 @@
 ﻿@inherits LayoutComponentBase
-@Body
+
+<div class="layout-wrapper">
+    <!-- Menú lateral -->
+    <aside class="layout-sidebar">
+        <NavMenu />
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="layout-content">
+        @Body
+    </main>
+</div>

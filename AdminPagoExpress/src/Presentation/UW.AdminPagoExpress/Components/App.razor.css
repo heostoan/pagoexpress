@@ -8,12 +8,3 @@ body {
     margin: 0;
     line-height: normal;
 }
-
-/* Chosen-like minimal styles for select */
-.chosen-container {
-    width: 100%;
-}
-
-.chosen-select {
-    width: 100%;
-}

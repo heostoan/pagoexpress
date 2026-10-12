@@ -1,67 +1,44 @@
 ﻿@rendermode @(new InteractiveWebAssemblyRenderMode(false))
-@layout BasicLayout
 
-<div class="container-menu-sidebar">
-    <div class="sidebar active">
-        <div class="head">
-            <div class="logo">
-                <img src="./Images/Logo-Wiener.svg" alt="Logo" />
-            </div>
-        </div>
+<div class="menu-container">
 
-        <div class="nav">
-            <ul>
-                <li>
-                    <a href="/tratamientos">
-                        <span class="material-symbols-rounded">medical_services</span>
-                        <span class="text">Tratamientos</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/cursos">
-                        <span class="material-symbols-rounded">school</span>
-                        <span class="text">Cursos</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/tarifarios">
-                        <span class="material-symbols-rounded">receipt_long</span>
-                        <span class="text">Tarifarios</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/categorias">
-                        <span class="material-symbols-rounded">category</span>
-                        <span class="text">Categorías</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <!-- Logo -->
+    <div class="menu-logo">
+        <img src="./Images/Logo-Wiener.svg" alt="Logo" />
     </div>
+
+    <!-- Sección -->
+    <div class="menu-section-title">Mantenedores</div>
+
+    <!-- Items del menú -->
+    <nav class="menu-nav">
+        <NavLink href="/categorias" class="menu-item">
+            <span class="material-symbols-rounded menu-icon">category</span>
+            <span class="menu-text">Categorías</span>
+        </NavLink>
+
+        <NavLink href="/tratamientos" class="menu-item">
+            <span class="material-symbols-rounded menu-icon">medical_services</span>
+            <span class="menu-text">Tratamientos</span>
+        </NavLink>
+
+        <NavLink href="/cursos" class="menu-item">
+            <span class="material-symbols-rounded menu-icon">school</span>
+            <span class="menu-text">Cursos</span>
+        </NavLink>
+
+        <NavLink href="/tarifarios" class="menu-item">
+            <span class="material-symbols-rounded menu-icon">receipt_long</span>
+            <span class="menu-text">Tarifarios</span>
+        </NavLink>
+
+        <NavLink href="/pacientes" class="menu-item">
+            <span class="material-symbols-rounded menu-icon">group</span>
+            <span class="menu-text">Pacientes</span>
+        </NavLink>
+    </nav>
+
+    <!-- Footer -->
+    <div class="menu-footer">© @DateTime.Now.Year</div>
+
 </div>
-
-            CarreraDescripcion = data.CarreraDescripcion,
-            Matriculado = data.Matriculado,
-            Ip = data.Ip
-        };
-         */
-        
-    }
-
-    private void FichaClick()
-    {
-        // Obtenemos la ruta relativa actual en minúsculas.
-        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToLowerInvariant();
-
-        // Si ya estamos en /ficha o /ficha/enc, no se hace nada.
-        if (relativePath == "ficha" || relativePath == "fichaenc")
-        {
-            return;
-        }
-
-        // Si no, navegamos a /ficha.
-        NavigationManager.NavigateTo("/ficha");
-    }
-
-
-}

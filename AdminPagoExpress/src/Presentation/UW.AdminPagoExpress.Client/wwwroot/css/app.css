@@ -1,0 +1,226 @@
+﻿.layout-sidebar .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Chosen-like minimal styles for select */
+.chosen-container {
+    width: 100%;
+}
+
+.chosen-select {
+    width: 100%;
+}
+
+/* ============================================================
+   LAYOUT WRAPPER — Menú + contenido lado a lado
+   ============================================================ */
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* ============================================================
+   SIDEBAR — Menú lateral fijo
+   ============================================================ */
+.layout-sidebar {
+    width: 250px;
+    min-width: 250px;
+    background-color: #1e293b;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow: hidden; /* 🔥 clave: quita el scroll del sidebar */
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+}
+
+/* ============================================================
+   CONTENIDO PRINCIPAL
+   ============================================================ */
+.layout-content {
+    flex: 1;
+    min-width: 0;
+    padding: 24px;
+    background-color: #f8fafc;
+    overflow-x: auto;
+}
+
+/* ============================================================
+   RESPONSIVE — Menú más angosto en pantallas pequeñas
+   ============================================================ */
+@media (max-width: 991px) {
+    .layout-sidebar {
+        width: 70px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 767px) {
+    .layout-wrapper {
+        flex-direction: column;
+    }
+
+    .layout-sidebar {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        position: relative;
+    }
+}
+
+/* Enlace activo del menú */
+.nav-pills .nav-link.active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Hover de los enlaces */
+.nav-pills .nav-link:hover {
+    background-color: rgba(255, 255, 255, .1);
+    color: #ffffff !important;
+}
+
+/* Iconos Material Symbols */
+.nav-link .material-symbols-rounded {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ============================================================
+   MENÚ INTERNO
+   ============================================================ */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px 12px;
+    overflow-y: auto; /* 🔥 scroll solo aquí si es necesario */
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+    /* Scrollbar delgado y discreto */
+    .menu-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .menu-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .menu-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, .1);
+        border-radius: 3px;
+    }
+
+        .menu-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, .2);
+        }
+
+/* Logo */
+.menu-logo {
+    text-align: center;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+    .menu-logo img {
+        max-width: 140px;
+        height: auto;
+    }
+
+/* Título de sección */
+.menu-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    padding: 0 12px;
+    margin-bottom: 8px;
+}
+
+/* Navegación */
+.menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+/* Item del menú */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #cbd5e1 !important;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all .15s ease;
+    position: relative;
+}
+
+    .menu-item:hover {
+        background-color: rgba(255, 255, 255, .06);
+        color: #ffffff !important;
+    }
+
+    /* Item activo */
+    .menu-item.active {
+        background-color: #0d6efd;
+        color: #ffffff !important;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, .35);
+    }
+
+        .menu-item.active .menu-icon {
+            color: #ffffff;
+        }
+
+/* Icono */
+.menu-icon {
+    font-size: 20px;
+    line-height: 1;
+    color: #94a3b8;
+    transition: color .15s ease;
+}
+
+.menu-item:hover .menu-icon {
+    color: #ffffff;
+}
+
+/* Texto */
+.menu-text {
+    flex: 1;
+}
+
+/* Footer */
+.menu-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #64748b;
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
